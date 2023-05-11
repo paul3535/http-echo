@@ -17,7 +17,7 @@ GOMAXPROCS ?= 4
 # Get the project metadata
 GOVERSION := 1.19
 PROJECT := $(CURRENT_DIR:$(GOPATH)/src/%=%)
-OWNER ?= hashicorp
+OWNER ?= paul3535
 NAME ?= http-echo
 GIT_COMMIT ?= $(shell git rev-parse --short HEAD)
 VERSION := $(shell awk -F\" '/Version/ { print $$2; exit }' "${CURRENT_DIR}/version/version.go")
@@ -38,8 +38,8 @@ GPG_KEY ?=
 LD_FLAGS ?= \
 	-s \
 	-w \
-	-X 'github.com/hashicorp/http-echo/version.Name=${NAME}' \
-	-X 'github.com/hashicorp/http-echo/version.GitCommit=${GIT_COMMIT}'
+	-X 'github.com/paul3535/http-echo/version.Name=${NAME}' \
+	-X 'github.com/paul3535/http-echo/version.GitCommit=${GIT_COMMIT}'
 
 # List of Docker targets to build
 DOCKER_TARGETS ?= scratch alpine
@@ -68,6 +68,7 @@ define make-xc-target
 				GOOS="${1}" \
 				GOARCH="${2}" \
 				go build \
+				  -buildvcs=false \
 				  -a \
 					-o="pkg/${1}_${2}/${NAME}${3}" \
 					-ldflags "${LD_FLAGS}" \
@@ -120,9 +121,10 @@ define make-docker-target
 			--rm \
 			--force-rm \
 			--no-cache \
+			--progress=plain \
 			--compress \
 			--file="docker/${1}/Dockerfile" \
-			--platform linux/amd64,linux/arm64 \
+			--platform linux/amd64\
 			--build-arg="LD_FLAGS=${LD_FLAGS}" \
 			--build-arg="GOTAGS=${GOTAGS}" \
 			$(if $(filter $1,scratch),--tag="${OWNER}/${NAME}",) \
